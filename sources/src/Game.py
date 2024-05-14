@@ -10,6 +10,7 @@ from Button import *
 #Variáveis e constantes
 PLAYER_PIECES = []
 COMPUTER_PIECES = []
+BOARD_PIECES = []
 STOCK_PIECES = []
 GREATER_PIECE = []
 PLAYER_PIECES_OBJ = []
@@ -22,6 +23,8 @@ def initialize(screen):
     global COMPUTER_PIECES
     global STOCK_PIECES
     global GREATER_PIECE
+    global current_l_end_x
+    global current_r_end_x
 
     # Pegar as pecas geradas e setar nas variaveis
     generated_pieces = generate_pieces()
@@ -29,6 +32,8 @@ def initialize(screen):
     COMPUTER_PIECES = generated_pieces[1]
     STOCK_PIECES = generated_pieces[2]
     GREATER_PIECE = generated_pieces[3]
+    current_r_end_x = RESOLUTION[0] // 2 - 32
+    current_l_end_x = current_r_end_x - 64
 
     # Chamar as funcoes de desenho
     draw_background(screen)
@@ -82,7 +87,6 @@ def draw_pieces():
     # Desenhar as pecas do player
     for i in range(len(PLAYER_PIECES_OBJ)):
         piece = PLAYER_PIECES_OBJ[i]
-        piece.handle_mouse_events()
         if piece.is_played():
             piece.show_played_vertical()
         else:
@@ -91,7 +95,6 @@ def draw_pieces():
     # Desenhar as pecas do computador
     for i in range(len(COMPUTER_PIECES_OBJ)):
         piece = COMPUTER_PIECES_OBJ[i]
-        piece.handle_mouse_events()
         if piece.is_played():
             piece.show_played_vertical()
         else:
@@ -128,46 +131,90 @@ def draw_buttons():
         BUTTONS[i].draw()
     pygame.display.update()
 
-def play_piece(piece, screen):
+def play_piece(piece, screen, side):
     global current_l_end_x
+    global current_r_end_x
 
-    y_end = RESOLUTION[1]//2 - 32
+    piece_x = 0
+    if side == RIGHT:
+        # Valida se precisa reverter a peca
+        if len(BOARD_PIECES) > 0 and piece[1] == BOARD_PIECES[-1][-1]:
+            piece.reverse()
+        piece_x = current_r_end_x
+        BOARD_PIECES.append([piece[0], piece[1]])
+    else:
+        # Valida se precisa reverter a peca
+        if piece[0] == BOARD_PIECES[0][0]:
+            piece.reverse()
+        piece_x = current_l_end_x
+        BOARD_PIECES.insert(0, [piece[0], piece[1]])
+
     if piece[0] == piece[1]:
-        temp_piece = Piece(piece[0], piece[1], screen, current_l_end_x, y_end)
+        piece_y = RESOLUTION[1] // 2 - 32
+        current_r_end_x += 32
+        temp_piece = Piece(piece[0], piece[1], screen, piece_x, piece_y)
         temp_piece.show_vertical()
+    else:
+        piece_y = RESOLUTION[1] // 2 - 16
+        current_r_end_x += 64
+        temp_piece = Piece(piece[0], piece[1], screen, piece_x, piece_y)
+        temp_piece.show_horizontal()
 
-def player_play(piece, screen):
-    play_piece(piece, screen)
+    log("Board Pieces: "+str(BOARD_PIECES))
+
+def player_play(piece, screen, side):
+    global PLAYER_TURN
+
+    play_piece(piece, screen, side)
     piece_index = PLAYER_PIECES.index(piece)
     PLAYER_PIECES_OBJ[piece_index].set_played()
     PLAYER_PIECES.remove(piece)
     PLAYER_TURN = False
 
-def computer_play(piece, screen):
+def computer_play(piece, screen, side):
+    global PLAYER_TURN
+
     sleep(1.5)
-    play_piece(piece, screen)
+    play_piece(piece, screen, side)
     piece_index = COMPUTER_PIECES.index(piece)
     COMPUTER_PIECES_OBJ[piece_index].set_played()
     COMPUTER_PIECES.remove(piece)
     PLAYER_TURN = True
 
 def play_greater_piece(screen):
-    global current_l_end_x
-    current_l_end_x = RESOLUTION[0]//2 - 32
     if GREATER_PIECE in PLAYER_PIECES:
-        player_play(GREATER_PIECE, screen)
+        sleep(1.5)
+        player_play(GREATER_PIECE, screen, RIGHT)
         log("Starting game playing "+str(GREATER_PIECE)+" from Player")
     if GREATER_PIECE in COMPUTER_PIECES:
-        computer_play(GREATER_PIECE, screen)
+        computer_play(GREATER_PIECE, screen, RIGHT)
         log("Starting game playing " + str(GREATER_PIECE) + " from Computer")
 
-#TODO
-def player_turn():
+def player_turn(screen):
     if PLAYER_TURN:
-        log('TODO')
+        for i in range(len(PLAYER_PIECES_OBJ)):
+            if PLAYER_PIECES_OBJ[i].handle_mouse_events() and PLAYER_TURN:
+                validate_piece(PLAYER_PIECES_OBJ[i], screen)
+
+def validate_piece(piece_obj, screen):
+    connection_numbers = [BOARD_PIECES[0][0], BOARD_PIECES[-1][-1]]
+    piece = piece_obj.get_numbers()
+    # Valida peca a esquerda
+    if connection_numbers[0] in piece:
+        # Joga a peca
+        player_play(piece, screen, LEFT)
+
+    # Valida peca a direita
+    elif connection_numbers[1] in piece:
+        # Joga a peca
+        player_play(piece, screen, RIGHT)
+    # Peca não entra em nenhum lado
+    else:
+        log('Illegal move')
+
 
 def game(screen):
     play_greater_piece(screen)
-    #player_turn()
+    player_turn(screen)
     draw_buttons()
     draw_pieces()

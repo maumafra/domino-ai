@@ -27,15 +27,21 @@ class Piece(object):
         blank_place = "../images/domino_pieces/8.png"
         self._blank = pygame.image.load(blank_place).convert_alpha()
 
+    def get_numbers(self):
+        return [self._number1, self._number2]
+
     def is_played(self):
         return self._played
+
+    def to_str(self):
+        return str(self._number1)+", "+str(self._number2)
 
     def set_played(self):
         self._played = True
 
     def show_horizontal(self):
-        self._screen.blit(self._square1, (self._X, self._Y))
-        self._screen.blit(pygame.transform.flip(self._square2, True, False), ((self._X + 32), self._Y))
+        self._screen.blit(pygame.transform.rotate(self._square1, 90), (self._X, self._Y))
+        self._screen.blit(pygame.transform.flip(pygame.transform.rotate(self._square2, -90), False, True), ((self._X + 32), self._Y))
         pygame.display.update()
 
     def show_vertical(self):
@@ -64,11 +70,16 @@ class Piece(object):
         # Pegar a pos do mouse
         pos = pygame.mouse.get_pos()
 
+        action = False
+
         # Verifica mouseover e click
         if self._rect.collidepoint(pos):
             if pygame.mouse.get_pressed()[0] == 1 and self._clicked == False:
                 self._clicked = True
-                log('CLICKED '+str(self._number1)+", "+str(self._number2))
+                action = True
+                log('Clicked piece '+self.to_str())
 
         if pygame.mouse.get_pressed()[0] == 0:
             self._clicked = False
+
+        return action
