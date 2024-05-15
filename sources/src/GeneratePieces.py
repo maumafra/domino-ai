@@ -7,6 +7,13 @@ def generate_pieces():
     dominoes = list(combinations_with_replacement(range(0, 7), 2))
     # Converter lista de tuples para uma lista de listas
     dominoes = [list(x) for x in dominoes]
+    return dominoes
+
+def generate_game_pieces():
+    # Lista das pecas
+    dominoes = list(combinations_with_replacement(range(0, 7), 2))
+    # Converter lista de tuples para uma lista de listas
+    dominoes = [list(x) for x in dominoes]
     # Embaralhar
     shuffle(dominoes)
     # Coeficiente = metade de 28 (len(dominoes)) = 14

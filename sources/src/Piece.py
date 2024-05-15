@@ -9,7 +9,6 @@ class Piece(object):
         self._number1 = number1
         self._number2 = number2
 
-        self._played = False
         self._clicked = False
 
         self._X = X
@@ -30,14 +29,8 @@ class Piece(object):
     def get_numbers(self):
         return [self._number1, self._number2]
 
-    def is_played(self):
-        return self._played
-
     def to_str(self):
         return str(self._number1)+", "+str(self._number2)
-
-    def set_played(self):
-        self._played = True
 
     def show_horizontal(self):
         self._screen.blit(pygame.transform.rotate(self._square1, 90), (self._X, self._Y))
@@ -49,18 +42,19 @@ class Piece(object):
         self._screen.blit(pygame.transform.flip(self._square2, False, True), (self._X, (self._Y + 32)))
         pygame.display.update()
 
-    def show_vertical_scaled(self):
+    def show_vertical_scaled(self, x, y):
+        self._X = x
+        self._Y = y
+        self._rect = Rect((self._X, self._Y), (64, 128))
         scaled_piece = pygame.transform.scale(self._square1, (64, 64))
-        self._screen.blit(scaled_piece, (self._X, self._Y))
+        self._screen.blit(scaled_piece, (x, y))
         scaled_piece = pygame.transform.scale(self._square2, (64, 64))
-        self._screen.blit(pygame.transform.flip(scaled_piece, False, True), (self._X, (self._Y + 64)))
-        pygame.display.update()
+        self._screen.blit(pygame.transform.flip(scaled_piece, False, True), (x, (y + 64)))
 
-    def show_blank_vertical(self):
+    def show_blank_vertical(self, x, y):
         scaled_piece = pygame.transform.scale(self._blank, (64, 64))
-        self._screen.blit(scaled_piece, (self._X, self._Y))
-        self._screen.blit(pygame.transform.flip(scaled_piece, False, True), (self._X, (self._Y + 64)))
-        pygame.display.update()
+        self._screen.blit(scaled_piece, (x, y))
+        self._screen.blit(pygame.transform.flip(scaled_piece, False, True), (x, (y + 64)))
 
     def show_played_vertical(self):
         pygame.draw.rect(self._screen, OUTER_COLOR, self._rect)
