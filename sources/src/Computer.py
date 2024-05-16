@@ -94,8 +94,12 @@ def minimax_ab(board_pieces, computer_pieces, alpha, beta, depth, maximize):
             pieces_copy = computer_pieces.copy()
             pieces_copy.remove(move[0])
             if move[1] == RIGHT:
+                if len(board_copy) > 0 and move[0][1] == board_copy[-1][-1]:
+                    move[0].reverse()
                 board_copy.append(move[0])
             else:
+                if len(board_copy) > 0 and move[0][0] == board_copy[0][0]:
+                    move[0].reverse()
                 board_copy.insert(0, move[0])
             score = minimax_ab(board_copy, pieces_copy, depth + 1, alpha, beta, False)
             best_score = max(score, best_score)
@@ -113,8 +117,12 @@ def minimax_ab(board_pieces, computer_pieces, alpha, beta, depth, maximize):
             board_copy = board_pieces.copy()
             pieces_copy = computer_pieces.copy()
             if move[1] == RIGHT:
+                if len(board_copy) > 0 and move[0][1] == board_copy[-1][-1]:
+                    move[0].reverse()
                 board_copy.append(move[0])
             else:
+                if len(board_copy) > 0 and move[0][0] == board_copy[0][0]:
+                    move[0].reverse()
                 board_copy.insert(0, move[0])
             score = minimax_ab(board_copy, pieces_copy, depth + 1, alpha, beta, True)
             best_score = min(score, best_score)
